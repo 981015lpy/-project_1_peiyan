@@ -56,7 +56,7 @@ function setup() {
   ]
 
   createCanvas(canvasWidth, canvasHeight);
-  greeting = createElement('h2', greetingSentence[stepCount - 1]);
+  greeting = createElement('h2', greetingSentence[stepCount - 1] ?? '');
   greeting.position(200, 20)
   textSize(20)
 }
@@ -400,7 +400,7 @@ function movement (startPoint, targetPoint, speed) {
  */
 function mouseClicked(){
   stepCount++
-  greeting.html(greetingSentence[stepCount - 1]) 
+  greeting.html(greetingSentence[stepCount - 1] ?? '') 
 }
 
 
