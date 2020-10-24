@@ -1,12 +1,23 @@
 let canvasWidth, canvasHeight
 let stepCount = 1
 let maxStep = 6
+ground_color = 60
 
 let sunStartPosition = { x: 300, y: 350 }
-
 let cloudArray = []
-
 let rainArr = []
+let snowflakes = []
+
+let greeting
+
+let greetingSentence = [
+  'Daily life: NEVER GIVE UP',
+  'The sun rises and sets, he is always walking, to achieve his destination',
+  'On the road, there could be raining suddenly',
+  'And snowing heavily',
+  'No matter what the difficulties are, nothing can stop his advance. <br/> NEVER GIVE UP',
+  "Thanks for watch the normal life of everyone. <br/> Let's show respect to every hardworking people"
+]
 
 function setup() {
   canvasWidth = document.body.offsetWidth
@@ -14,7 +25,7 @@ function setup() {
   cloudArray = [
     { point: {x: canvasWidth + 300, y: 150}, r: 70 },
     { point: {x: canvasWidth + 500, y: 200}, r: 60 },
-    { point: {x: canvasWidth + 80, y: 200}, r: 65 },
+    { point: {x: canvasWidth, y: 200}, r: 65 },
     { point: {x: canvasWidth + 100, y: 100}, r: 65 },
     { point: {x: canvasWidth + 400, y: 50}, r: 65 },
     { point: {x: canvasWidth + 600, y: 220}, r: 60 },
@@ -42,16 +53,19 @@ function setup() {
     { x: canvasWidth + 20, y: 400 },
     { x: canvasWidth + 180, y: 550 },
   ]
-  
+
   createCanvas(canvasWidth, canvasHeight);
+  greeting = createElement('h2', greetingSentence[stepCount - 1]);
+  greeting.position(200, 20)
+  textSize(20)
 }
 
 function draw() {
   let t = millis() / 1000;
 
-  background(abs(255 - 20 * t))
+  background(abs(210 - 20 * t))
 
-  if (stepCount === maxStep) stepCount = 1
+  if (stepCount > maxStep) stepCount = 1
 
   // create the sun
   if (stepCount === 2) sun(sunStartPosition, 150)
@@ -60,13 +74,49 @@ function draw() {
   mountain(600, 5, 14)
 
   // create the black ground
-  ground({ x: 0, y: canvasHeight - 30 }, canvasWidth, 50)
+  ground({ x: 0, y: canvasHeight - 30 }, canvasWidth, 50, t)
 
   // create human
   person({ x: canvasWidth / 2, y: canvasHeight - 100 })
   
   // create cloud
   if (stepCount === 3) rainingCloud(cloudArray, rainArr, 5)
+  else {
+    cloudArray = [
+      { point: {x: canvasWidth + 300, y: 150}, r: 70 },
+      { point: {x: canvasWidth + 500, y: 200}, r: 60 },
+      { point: {x: canvasWidth + 80, y: 200}, r: 65 },
+      { point: {x: canvasWidth + 100, y: 100}, r: 65 },
+      { point: {x: canvasWidth + 400, y: 50}, r: 65 },
+      { point: {x: canvasWidth + 600, y: 220}, r: 60 },
+    ]
+    rainArr = [
+      { x: canvasWidth + 700, y: 400 },
+      { x: canvasWidth + 670, y: 430 },
+      { x: canvasWidth + 670, y: 530 },
+      { x: canvasWidth + 470, y: 1000 },
+      { x: canvasWidth + 380, y: 500 },
+      { x: canvasWidth + 370, y: 600 },
+      { x: canvasWidth + 180, y: 410 },
+      { x: canvasWidth + 500, y: 400 },
+      { x: canvasWidth + 450, y: 410 },
+      { x: canvasWidth + 520, y: 510 },
+      { x: canvasWidth + 580, y: 310 },
+      { x: canvasWidth + 390, y: 380 },
+      { x: canvasWidth + 600, y: 700 },
+      { x: canvasWidth + 570, y: 660 },
+      { x: canvasWidth + 450, y: 680 },
+      { x: canvasWidth + 120, y: 480 },
+      { x: canvasWidth + 50, y: 380 },
+      { x: canvasWidth + 50, y: 350 },
+      { x: canvasWidth + 20, y: 400 },
+      { x: canvasWidth + 180, y: 550 },
+    ]
+  }
+
+  // start snowing
+  if (stepCount === 4 || stepCount === 5) snow()
+
 }
 
 /**
@@ -122,7 +172,14 @@ function sun(startPoint, r) {
  */
 function ground(startPoint, width, height) {
   push()
-  fill(30)
+  if (stepCount === 4 || stepCount === 5) {
+    let t = millis() / 1000
+    fill(60 + 2 * t)
+  }
+  else {
+    fill(ground_color)
+  }
+  
   stroke(30)
   rect(startPoint.x, startPoint.y, width, height)
   pop()
@@ -216,10 +273,18 @@ function rainingCloud(cloudArray, rainArr, speed) {
     raining(item, speed)
     return null
   })
+  cloudArray.map(item => {
+    movement(item.point, {x: item.point.x - speed * 10, y: item.point.y}, speed)
+    return null
+  })
+  rainArr.map(item => {
+    movement(item, {x: item.x - speed * 10, y: item.y}, speed)
+    return null
+  })
   pop()
 }
 
-function cloud(cloud, radius, speed) {
+function cloud(cloud, radius) {
   push()
   fill('#acacac')
   stroke('#acacac')
@@ -229,25 +294,77 @@ function cloud(cloud, radius, speed) {
   ellipse(cloud.x - 70, cloud.y, radius - 35)
   ellipse(cloud.x + 70, cloud.y, radius - 35)
 
-  let t = millis() / 1000
-  let targetPoint = { x: cloud.x - t, y: cloud.y}
-  movement(cloud, targetPoint, speed)
+  // let t = millis() / 1000
+  // let targetPoint = { x: cloud.x - t, y: cloud.y}
+  // movement(cloud, targetPoint, speed)
   pop()
 }
 
-function raining(startPoint, speed) {
+function raining(startPoint) {
   push()
   stroke('#acacac')
   line(startPoint.x, startPoint.y, getRainEndPoint(startPoint, 40).x, getRainEndPoint(startPoint, 40).y)
-  let t = millis() / 1000
-  let targetPoint = { x: startPoint.x - t, y: startPoint.y}
-  movement(startPoint, targetPoint, speed)
+
+  // let t = millis() / 1000
+  // let targetPoint = { x: startPoint.x - t, y: startPoint.y}
+  // movement(startPoint, targetPoint, speed)
   pop()
+
   function getRainEndPoint(point, length) {
     return {x: point.x + length ?? 100, y: point.y + length ?? 100}
   }
 }
 
+function snow() {
+  let t = frameCount / 60
+  for (let i = 0; i < Math.random(5); i++) {
+    snowflakes.push(new snowflake())
+    t
+  }
+  for (let flake of snowflakes) {
+    flake.update(t)
+    flake.display(t)
+  }
+}
+
+function drawSnow(snowX,snowY){
+	push();
+	translate(snowX,snowY);
+	fill(255);
+	noStroke();
+	ellipse(90,780,200,110);
+	pop();
+}
+
+function snowflake() {
+	//initiating coordinates
+  this.posX = 0;
+  this.posY = random(-50, 0);
+  this.initialangle = random(0, 2 * PI);
+  this.size = random(2, 5);
+  
+  this.radius = sqrt(random(pow(width / 2, 2)));
+  this.update = function(time) {
+		//x position follows a circle
+    let w = 0.8; // angular speed
+    let angle = w * time + this.initialangle;//updated angle, change over time
+    this.posX = width / 2 + this.radius * sin(angle); //
+
+		 // different size snowflakes fall at slightly different y speeds
+    this.posY += pow(this.size, 0.5); //square root
+
+		// delete snowflake if past end of screen
+    if (this.posY > height) {
+      let index = snowflakes.indexOf(this);
+      snowflakes.splice(index, 1);
+    }
+  };
+  this.display = function() {
+    fill(255);
+    stroke(255);
+    ellipse(this.posX, this.posY, this.size);
+  };
+}
 
 function movement (startPoint, targetPoint, speed) {
   if (startPoint.x > targetPoint.x) startPoint.x -= speed
@@ -258,7 +375,8 @@ function movement (startPoint, targetPoint, speed) {
 }
 
 function mouseClicked(){
-  stepCount ++
+  stepCount++
+  greeting.html(greetingSentence[stepCount - 1]) 
 }
 
 
