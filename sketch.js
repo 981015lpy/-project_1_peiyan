@@ -263,6 +263,13 @@ function person(position) {
   }
 }
 
+/**
+ * @name: create the clouds and rain
+ * @param {Array} cloudArray cloud array, includes position and radius
+ * @param {Array} rainArr rain line position array
+ * @param {Number} speed
+ * @return {*}
+ */
 function rainingCloud(cloudArray, rainArr, speed) {
   push()
   cloudArray.map(item => {
@@ -284,6 +291,12 @@ function rainingCloud(cloudArray, rainArr, speed) {
   pop()
 }
 
+/**
+ * @name: create one cloud
+ * @param {Object} cloud cloud center position
+ * @param {Number} radius cloud center circle radius
+ * @return {*}
+ */
 function cloud(cloud, radius) {
   push()
   fill('#acacac')
@@ -300,14 +313,15 @@ function cloud(cloud, radius) {
   pop()
 }
 
+/**
+ * @name: create rain line
+ * @param {Object} startPoint rain line start point
+ * @return {*}
+ */
 function raining(startPoint) {
   push()
   stroke('#acacac')
   line(startPoint.x, startPoint.y, getRainEndPoint(startPoint, 40).x, getRainEndPoint(startPoint, 40).y)
-
-  // let t = millis() / 1000
-  // let targetPoint = { x: startPoint.x - t, y: startPoint.y}
-  // movement(startPoint, targetPoint, speed)
   pop()
 
   function getRainEndPoint(point, length) {
@@ -315,6 +329,9 @@ function raining(startPoint) {
   }
 }
 
+/**
+ * @name: snowing
+ */
 function snow() {
   let t = frameCount / 60
   for (let i = 0; i < Math.random(5); i++) {
@@ -327,15 +344,11 @@ function snow() {
   }
 }
 
-function drawSnow(snowX,snowY){
-	push();
-	translate(snowX,snowY);
-	fill(255);
-	noStroke();
-	ellipse(90,780,200,110);
-	pop();
-}
-
+/**
+ * @name: create snow flake
+ * @param {*}
+ * @return {*}
+ */
 function snowflake() {
 	//initiating coordinates
   this.posX = 0;
@@ -366,6 +379,13 @@ function snowflake() {
   };
 }
 
+/**
+ * @name: move the object
+ * @param {Object} startPoint
+ * @param {Object} targetPoint
+ * @param {Number} speed
+ * @return {*}
+ */
 function movement (startPoint, targetPoint, speed) {
   if (startPoint.x > targetPoint.x) startPoint.x -= speed
   if (startPoint.x < targetPoint.x) startPoint.x += speed
@@ -374,6 +394,9 @@ function movement (startPoint, targetPoint, speed) {
   translate(startPoint.x,startPoint.y)
 }
 
+/**
+ * @name: mouse click
+ */
 function mouseClicked(){
   stepCount++
   greeting.html(greetingSentence[stepCount - 1]) 
