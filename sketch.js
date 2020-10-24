@@ -2,6 +2,7 @@ let canvasWidth, canvasHeight
 let stepCount = 1
 let maxStep = 6
 ground_color = 60
+background_color = 210
 
 let sunStartPosition = { x: 300, y: 350 }
 let cloudArray = []
@@ -63,7 +64,7 @@ function setup() {
 function draw() {
   let t = millis() / 1000;
 
-  background(abs(210 - 20 * t))
+  background(230 - 200 * sin(t / 2))
 
   if (stepCount > maxStep) stepCount = 1
 
