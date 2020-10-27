@@ -1,24 +1,22 @@
 let canvasWidth, canvasHeight
 let stepCount = 1
-let maxStep = 6
+let maxStep = 5
+let sunDisplay = 1
+
 ground_color = 60
 background_color = 210
+ground_height = 10
 
 let sunStartPosition = { x: 300, y: 350 }
+let sunColor = 180
+
 let cloudArray = []
 let rainArr = []
 let snowflakes = []
+let birds = []
 
-let greeting
-
-let greetingSentence = [
-  'Daily life: NEVER GIVE UP',
-  'The sun rises and sets, he is always walking, to achieve his destination',
-  'On the road, there could be raining suddenly',
-  'And snowing heavily',
-  'No matter what the difficulties are, nothing can stop his advance. <br/> NEVER GIVE UP',
-  "Thanks for watch the normal life of everyone. <br/> Let's show respect to every hardworking people"
-]
+let person_speed = 7
+let mountain_speed = 70
 
 function setup() {
   canvasWidth = document.body.offsetWidth
@@ -55,42 +53,46 @@ function setup() {
     { x: canvasWidth + 180, y: 550 },
   ]
 
+  birds = [
+    { x: canvasWidth + 300, y: 150 },
+    { x: canvasWidth + 500, y: 200 },
+    {x: canvasWidth + 100, y: 200},
+    {x: canvasWidth + 100, y: 100},
+    {x: canvasWidth + 400, y: 50}
+  ]
+
   createCanvas(canvasWidth, canvasHeight);
-  greeting = createElement('h2', greetingSentence[stepCount - 1] ?? '');
-  greeting.position(200, 20)
-  textSize(20)
+  
 }
 
 function draw() {
+  console.log(stepCount, birds[0].x)
+
   let t = millis() / 1000;
 
   background(230 - 200 * sin(t / 2))
 
   if (stepCount > maxStep) stepCount = 1
 
-  // create the sun
-  if (stepCount === 2) sun(sunStartPosition, 150)
+  if (stepCount === 1) {
+    // reset the var
+    if (ground_height > 10) ground_height = ground_height - 0.01 * t
+    else ground_height = 10
 
-  // create the mountain group
-  mountain(600, 5, 14)
+    if (ground_color > 60) ground_color = ground_color - 0.1 * t
+    else ground_color = 60
 
-  // create the black ground
-  ground({ x: 0, y: canvasHeight - 30 }, canvasWidth, 50, t)
-
-  // create human
-  person({ x: canvasWidth / 2, y: canvasHeight - 100 })
-  
-  // create cloud
-  if (stepCount === 3) rainingCloud(cloudArray, rainArr, 5)
-  else {
+    person_speed = 5
+    sunStartPosition = { x: 300, y: 350 }
     cloudArray = [
       { point: {x: canvasWidth + 300, y: 150}, r: 70 },
       { point: {x: canvasWidth + 500, y: 200}, r: 60 },
-      { point: {x: canvasWidth + 80, y: 200}, r: 65 },
+      { point: {x: canvasWidth, y: 200}, r: 65 },
       { point: {x: canvasWidth + 100, y: 100}, r: 65 },
       { point: {x: canvasWidth + 400, y: 50}, r: 65 },
       { point: {x: canvasWidth + 600, y: 220}, r: 60 },
     ]
+  
     rainArr = [
       { x: canvasWidth + 700, y: 400 },
       { x: canvasWidth + 670, y: 430 },
@@ -113,10 +115,61 @@ function draw() {
       { x: canvasWidth + 20, y: 400 },
       { x: canvasWidth + 180, y: 550 },
     ]
+
+    birdsGroup(birds, 5)
+  }
+
+  // create the sun
+  if (stepCount === 2) {
+    ground_height = 10
+    person_speed = 7
+
+    // reset the birds position
+    birds = [
+      {x: canvasWidth + 300, y: 150 },
+      {x: canvasWidth + 500, y: 200 },
+      {x: canvasWidth, y: 200},
+      {x: canvasWidth + 100, y: 100},
+      {x: canvasWidth + 400, y: 50}
+    ]
+
+    sun(sunStartPosition, 150, sunColor)
+
+    if (sunDisplay % 2 === 0) sunColor = 180
+    else sunColor = '#8B0000dd'
+  }
+
+  // create the mountain group
+  mountain(600, 5, mountain_speed)
+
+  // create the black ground
+  ground({ x: 0, y: canvasHeight - 30 }, canvasWidth, ground_height, ground_color)
+
+  // create human
+  person({ x: canvasWidth / 2, y: canvasHeight - 100 }, person_speed)
+  
+  // create cloud
+  if (stepCount === 3) {
+    rainingCloud(cloudArray, rainArr, 6)
+    person_speed === 5
   }
 
   // start snowing
-  if (stepCount === 4 || stepCount === 5) snow()
+  if (stepCount === 4 || stepCount === 5) {
+    snow()
+    if (ground_height < 30) ground_height = ground_height + 0.01 * t
+    else ground_height = 30
+
+    ground_color = ground_color + 0.1 * t
+
+    if (stepCount === 4) person_speed = 2
+    if (stepCount === 5) person_speed = 1
+  }
+
+  if (stepCount === 6) {
+    person_speed = 8
+    
+  }
 
 }
 
@@ -150,17 +203,23 @@ function mountain(mountainHeight, mountainNum, moveSpeed) {
  * @param {Number} r sun radius
  * @return {*}
  */
-function sun(startPoint, r) {
+function sun(startPoint, r, color) {
   push()
-  fill(180)
-  stroke(180)
+  fill(color)
+  stroke(color)
 
   ellipse(startPoint.x, startPoint.y, r)
 
   let t = millis() / 1000
+
   let positionX = startPoint.x + 2000 * t
-  let targetPoint = { x: positionX, y: startPoint.y + 500 * sin(-0.3 * t) }
-  if (positionX < 35000) movement(startPoint, targetPoint, 1)
+  let targetPoint = {}
+
+  targetPoint = { x: positionX, y: startPoint.y - 1000 * t }
+
+  if (startPoint.x < 800)
+    movement(startPoint, targetPoint, 1)
+  
   pop()
 }
 
@@ -171,18 +230,17 @@ function sun(startPoint, r) {
  * @param {Number} height ground height
  * @return {*}
  */
-function ground(startPoint, width, height) {
+function ground(startPoint, width, height, color) {
   push()
   if (stepCount === 4 || stepCount === 5) {
     let t = millis() / 1000
-    fill(60 + 2 * t)
+    fill(color)
   }
   else {
-    fill(ground_color)
+    fill(color)
   }
-  
   stroke(30)
-  rect(startPoint.x, startPoint.y, width, height)
+  rect(startPoint.x, startPoint.y - height, width, startPoint.y+height)
   pop()
 }
 
@@ -191,12 +249,10 @@ function ground(startPoint, width, height) {
  * @param {*} position example:{x: 123, y:123}
  * @return {*}
  */
-function person(position) {
+function person(position, speed) {
   push()
 
   let t = millis() / 1000
-  // let t = 1
-  let speed = 2
   
   let headPosition = { x: position.x, y: position.y - 20 }
 
@@ -380,6 +436,50 @@ function snowflake() {
   };
 }
 
+function birdsGroup(birds, speed) {
+  push()
+  birds.map(item => {
+    bird(item)
+    return null
+  })
+  birds.map(item => {
+    movement(item, {x: item.x - speed * 10, y: item.y}, speed)
+    return null
+  })
+  pop()
+
+}
+
+function bird(position) {
+  stroke(200)
+  fill(200)
+
+  ellipse(position.x, position.y, 30)
+
+  let size_mouse = 10
+  let point1_mouse = { x: position.x - 2.5 * size_mouse, y: position.y }
+  let point2_mouse = { x: point1_mouse.x + 2 * size_mouse, y: point1_mouse.y - size_mouse / 2 }
+  let point3_mouse = { x: point1_mouse.x + 2 * size_mouse, y: point1_mouse.y + size_mouse / 2 }
+  createTriangle(point1_mouse, point2_mouse, point3_mouse)
+
+  let size_wing = 30
+  let point1_wing = position
+  let point2_wing = { x: point1_wing.x + size_wing, y: point1_wing.y + size_wing }
+  let point3_wing = { x: point1_wing.x + size_wing, y: point1_wing.y - size_wing }
+  createTriangle(point1_wing, point2_wing, point3_wing)
+
+  let size_tail = size_wing - 10
+  let point1_tail = { x: point3_wing.x - 5, y: position.y }
+  let point2_tail = { x: point1_tail.x + size_tail, y: point1_tail.y + size_tail }
+  let point3_tail = { x: point1_tail.x + size_tail, y: point1_tail.y - size_tail }
+  createTriangle(point1_tail, point2_tail, point3_tail)
+  
+  
+  function createTriangle(point1, point2, point3) {
+    triangle(point1.x, point1.y, point2.x, point2.y, point3.x, point3.y)
+  }
+}
+
 /**
  * @name: move the object
  * @param {Object} startPoint
@@ -400,7 +500,9 @@ function movement (startPoint, targetPoint, speed) {
  */
 function mouseClicked(){
   stepCount++
-  greeting.html(greetingSentence[stepCount - 1] ?? '') 
+  if (stepCount === 2) {
+    sunDisplay++ 
+  }
 }
 
 
