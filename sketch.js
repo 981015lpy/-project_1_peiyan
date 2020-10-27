@@ -1,5 +1,5 @@
 let canvasWidth, canvasHeight
-let stepCount = 1
+let stepCount = 0
 let maxStep = 5
 let sunDisplay = 1
 
@@ -15,7 +15,7 @@ let rainArr = []
 let snowflakes = []
 let birds = []
 
-let person_speed = 7
+let person_speed = 4
 let mountain_speed = 70
 
 function setup() {
@@ -61,12 +61,14 @@ function setup() {
     {x: canvasWidth + 400, y: 50}
   ]
 
+  person_speed = 7
+
   createCanvas(canvasWidth, canvasHeight);
   
 }
 
 function draw() {
-  console.log(stepCount, birds[0].x)
+  console.log(stepCount, person_speed)
 
   let t = millis() / 1000;
 
@@ -82,7 +84,7 @@ function draw() {
     if (ground_color > 60) ground_color = ground_color - 0.1 * t
     else ground_color = 60
 
-    person_speed = 5
+    person_speed = 4
     sunStartPosition = { x: 300, y: 350 }
     cloudArray = [
       { point: {x: canvasWidth + 300, y: 150}, r: 70 },
@@ -116,14 +118,13 @@ function draw() {
       { x: canvasWidth + 180, y: 550 },
     ]
 
-    birdsGroup(birds, 5)
+    birdsGroup(birds, 8)
   }
 
   // create the sun
   if (stepCount === 2) {
     ground_height = 10
     person_speed = 7
-
     // reset the birds position
     birds = [
       {x: canvasWidth + 300, y: 150 },
@@ -150,24 +151,25 @@ function draw() {
   
   // create cloud
   if (stepCount === 3) {
+    person_speed = 3
     rainingCloud(cloudArray, rainArr, 6)
-    person_speed === 5
   }
 
   // start snowing
   if (stepCount === 4 || stepCount === 5) {
     snow()
-    if (ground_height < 30) ground_height = ground_height + 0.01 * t
-    else ground_height = 30
-
-    ground_color = ground_color + 0.1 * t
 
     if (stepCount === 4) person_speed = 2
-    if (stepCount === 5) person_speed = 1
+    if (stepCount === 5) {
+      if (ground_height < 30) ground_height = ground_height + 0.01 * t
+      else ground_height = 30
+      ground_color = ground_color + 0.1 * t
+      person_speed = 1
+    }
   }
 
   if (stepCount === 6) {
-    person_speed = 8
+    person_speed = 7
     
   }
 
